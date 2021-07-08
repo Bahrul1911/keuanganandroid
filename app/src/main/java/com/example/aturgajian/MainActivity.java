@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private KeuanganAdapter adapter;
 
-    TextView text_masuk, text_keluar, text_total,text_jumlah;
+    TextView text_masuk, text_keluar, text_total, text_jumlah;
     SwipeRefreshLayout swipe_refresh;
 
     public static String transaksi_id, tgl_dari, tgl_ke;
@@ -82,20 +82,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        transaksi_id = ""; tgl_dari = ""; tgl_ke = ""; query_kas = ""; query_total = "";  filter = false;
+        transaksi_id = "";
+        tgl_dari = "";
+        tgl_ke = "";
+        query_kas = "";
+        query_total = "";
+        filter = false;
         sqliteHelper = new SqliteHelper(this);
 
-        text_masuk      = (TextView) findViewById(R.id.text_masuk);
-        text_keluar     = (TextView) findViewById(R.id.text_keluar);
-        text_total      = (TextView) findViewById(R.id.text_total);
-        swipe_refresh   = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-        text_jumlah = (TextView)findViewById(R.id.text_jumlah);
+        text_masuk = (TextView) findViewById(R.id.text_masuk);
+        text_keluar = (TextView) findViewById(R.id.text_keluar);
+        text_total = (TextView) findViewById(R.id.text_total);
+        swipe_refresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        text_jumlah = (TextView) findViewById(R.id.text_jumlah);
 
-
+        query_total = "SELECT SUM (jumlah) AS total, " +
+                "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'MASUK') AS masuk, " +
+                "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'KELUAR') AS keluar " +
+                "FROM transaksi";
 
         swipe_refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                query_total = "SELECT SUM (jumlah) AS total, " +
+                        "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'MASUK') AS masuk, " +
+                        "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'KELUAR') AS keluar " +
+                        "FROM transaksi";
 
                 KasAdapter();
             }
@@ -105,9 +117,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void KasAdapter(){
+    private void KasAdapter() {
 
-        listStudent.clear(); recyclerView.setAdapter(null);
+        listStudent.clear();
+        recyclerView.setAdapter(null);
 
         listStudent.addAll(aturGajianModel.allTransaksi());
 
@@ -118,14 +131,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         recyclerView.addOnItemTouchListener(
-                new RecyclerItemClickListener(getApplicationContext(), recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override public void onItemClick(View view, int position) {
+                new RecyclerItemClickListener(getApplicationContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
                         // do whatever
                         transaksi_id = ((TextView) view.findViewById(R.id.text_transaksi_id)).getText().toString();
                         ListMenu();
                     }
 
-                    @Override public void onLongItemClick(View view, int position) {
+                    @Override
+                    public void onLongItemClick(View view, int position) {
                         // do whatever
                     }
                 })
@@ -134,15 +149,15 @@ public class MainActivity extends AppCompatActivity {
         KasTotal();
     }
 
-    private void KasTotal(){
+    private void KasTotal() {
         NumberFormat rupiahFormat = NumberFormat.getInstance(Locale.GERMANY);
 
         SQLiteDatabase database = sqliteHelper.getReadableDatabase();
-        cursor = database.rawQuery( query_total, null);
+        cursor = database.rawQuery(query_total, null);
         cursor.moveToFirst();
-        text_masuk.setText("Rp."+rupiahFormat.format(cursor.getDouble(1)) );
-        text_keluar.setText("Rp."+rupiahFormat.format(cursor.getDouble(2)) );
-        text_total.setText("Rp."+
+        text_masuk.setText("Rp." + rupiahFormat.format(cursor.getDouble(1)));
+        text_keluar.setText("Rp." + rupiahFormat.format(cursor.getDouble(2)));
+        text_total.setText("Rp." +
                 rupiahFormat.format(cursor.getDouble(1) - cursor.getDouble(2))
         );
 
@@ -151,23 +166,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 
-
+        query_total = "SELECT SUM (jumlah) AS total, " +
+                "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'MASUK') AS masuk, " +
+                "(SELECT SUM(jumlah) FROM transaksi WHERE status = 'KELUAR') AS keluar " +
+                "FROM transaksi";
 
         KasAdapter();
 
     }
 
-    private void ListMenu(){
+    private void ListMenu() {
 
         final Dialog dialog = new Dialog(MainActivity.this);
         dialog.setContentView(R.layout.item_menu);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.WRAP_CONTENT);
 
-        TextView text_edit  = (TextView) dialog.findViewById(R.id.text_edit);
+        TextView text_edit = (TextView) dialog.findViewById(R.id.text_edit);
         TextView text_hapus = (TextView) dialog.findViewById(R.id.text_hapus);
         dialog.show();
 
@@ -187,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void Hapus(){
+    private void Hapus() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Konfirmasi");
         builder.setMessage("Yakin untuk mengahapus transaksi ini?");
@@ -217,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
         builder.show();
     }
+
     private void initData() {
         this.aturGajianModel = new AturGajianModel(this);
     }

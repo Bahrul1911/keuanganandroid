@@ -47,32 +47,41 @@ public class EditActivity extends AppCompatActivity {
 
         initData();
 
-        status = ""; tanggal = "";
+        status = "";
+        tanggal = "";
 
-        radio_status    = (RadioGroup)  findViewById(R.id.radio_status);
-        radio_masuk     = (RadioButton) findViewById(R.id.radio_masuk);
-        radio_keluar    = (RadioButton) findViewById(R.id.radio_keluar);
+        radio_status = (RadioGroup) findViewById(R.id.radio_status);
+        radio_masuk = (RadioButton) findViewById(R.id.radio_masuk);
+        radio_keluar = (RadioButton) findViewById(R.id.radio_keluar);
 
-        edit_jumlah     = (EditText)    findViewById(R.id.edit_jumlah);
-        edit_keterangan = (EditText)    findViewById(R.id.edit_keterangan);
-        edit_tanggal    = (EditText)    findViewById(R.id.edit_tanggal);
-        btn_simpan      = (Button)      findViewById(R.id.btn_simpan);
+        edit_jumlah = (EditText) findViewById(R.id.edit_jumlah);
+        edit_keterangan = (EditText) findViewById(R.id.edit_keterangan);
+        edit_tanggal = (EditText) findViewById(R.id.edit_tanggal);
+        btn_simpan = (Button) findViewById(R.id.btn_simpan);
 
         sqliteHelper = new SqliteHelper(this);
 
+        SQLiteDatabase database = sqliteHelper.getReadableDatabase();
+        cursor = database.rawQuery(
+                "SELECT *, strftime('%d/%m/%Y', tanggal) AS tanggal FROM transaksi " +
+                        "WHERE transaksi_id ='" + MainActivity.transaksi_id + "'", null);
+
+        cursor.moveToFirst();
 
         status = cursor.getString(1);
-        switch (status){
+        switch (status) {
             case "MASUK":
-                radio_masuk.setChecked(true); break;
+                radio_masuk.setChecked(true);
+                break;
             case "KELUAR":
-                radio_keluar.setChecked(true); break;
+                radio_keluar.setChecked(true);
+                break;
         }
 
         radio_status.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
-                switch(checkedId){
+                switch (checkedId) {
                     case R.id.radio_masuk:
                         status = "MASUK";
                         break;
@@ -85,11 +94,11 @@ public class EditActivity extends AppCompatActivity {
             }
         });
 
-        edit_jumlah.setText( cursor.getString(2) );
-        edit_keterangan.setText( cursor.getString(3) );
+        edit_jumlah.setText(cursor.getString(2));
+        edit_keterangan.setText(cursor.getString(3));
 
         tanggal = cursor.getString(4);
-        edit_tanggal.setText( cursor.getString(5) );
+        edit_tanggal.setText(cursor.getString(5));
 
         edit_tanggal.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,10 +108,10 @@ public class EditActivity extends AppCompatActivity {
                     public void onDateSet(DatePicker view, int year, int month_of_year, int day_of_month) {
                         // set day of month , month and year value in the edit text
                         NumberFormat numberFormat = new DecimalFormat("00");
-                        tanggal = year + "-" + numberFormat.format(( month_of_year +1 )) + "-" +
+                        tanggal = year + "-" + numberFormat.format((month_of_year + 1)) + "-" +
                                 numberFormat.format(day_of_month);
-                        edit_tanggal.setText(numberFormat.format(day_of_month) + "/" + numberFormat.format(( month_of_year +1 )) +
-                                "/" + year );
+                        edit_tanggal.setText(numberFormat.format(day_of_month) + "/" + numberFormat.format((month_of_year + 1)) +
+                                "/" + year);
                     }
                 }, DateFormat.year, DateFormat.month, DateFormat.day);
                 datePickerDialog.show();
@@ -119,10 +128,17 @@ public class EditActivity extends AppCompatActivity {
         btn_simpan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (status.equals("") || edit_jumlah.getText().toString().equals("")){
+                if (status.equals("") || edit_jumlah.getText().toString().equals("")) {
                     Toast.makeText(getApplicationContext(), "Isi data dengan benar",
                             Toast.LENGTH_LONG).show();
                 } else {
+
+                    SQLiteDatabase database = sqliteHelper.getWritableDatabase();
+                    database.execSQL(
+                           "UPDATE transaksi SET status= '"+status+"',jumlah='"+edit_jumlah.getText().toString()+
+                                   "',"+"keterangan='"+edit_keterangan.getText().toString()+"',tanggal='"+tanggal+
+                                   "' WHERE transaksi_id = '"+MainActivity.transaksi_id+"'"
+                    );
 
                     Toast.makeText(getApplicationContext(), "Perubahan berhasil disimpan", Toast.LENGTH_LONG).show();
                     finish();
@@ -133,11 +149,13 @@ public class EditActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Edit");
     }
+
     private void initData() {
         this.aturGajianModel = new AturGajianModel(this);
     }
+
     @Override
-    public boolean onSupportNavigateUp(){
+    public boolean onSupportNavigateUp() {
         finish();
         return true;
     }

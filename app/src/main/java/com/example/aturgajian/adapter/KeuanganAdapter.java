@@ -65,7 +65,8 @@ public class KeuanganAdapter extends RecyclerView.Adapter<KeuanganAdapter.MyView
 
         holder.tvTransaksi.setText(String.valueOf(keuangan.getId()));
         holder.tvKeterangan.setText(keuangan.getKeterangan());
-        holder.tvStatus.setText("Rp."+rupiahFormat.format(keuangan.getJumlah()));
+        holder.tvJumlah.setText("Rp."+rupiahFormat.format(keuangan.getJumlah()));
+        holder.tvStatus.setText(keuangan.getStatus());
         holder.tvTanggal.setText(keuangan.getDate());
 
     }
