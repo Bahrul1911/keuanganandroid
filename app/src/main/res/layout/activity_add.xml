@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top|left"
-                android:hint="Keterangan Pengeluaran"
+                android:hint="Keterangan Pemasukan"
                 android:maxLines="10"
                 android:minLines="4" />
         </LinearLayout>
